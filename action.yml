@@ -14,4 +14,4 @@ outputs:
     description: 'An url for the version manifest of the new version, or an empty string'
 runs:
   using: 'node12'
-  main: 'index.js'
+  main: 'dist/index.js'
