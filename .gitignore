@@ -1,0 +1,10 @@
+node_modules/
+.vscode/
+.idea/
+*.iml
+logs
+*.log
+npm-debug.log*
+.npm
+.env
+version_manifest_v2.json
