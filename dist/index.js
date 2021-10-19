@@ -57880,18 +57880,21 @@ async function main() {
     try {
         // Cache constants
         const paths = ['.cache'];
-        const restoreKey = 'mc-version-manifest-';
+        const restoreKey = 'mc-update-manifest-';
 
+        core.debug("Downloading cached manifest");
         let prevManifest;
         try {
             // Get last version manifest
-            await cache.restoreCache(paths, 'mc-version-manifest-0', // placeholder string, it should never match
+            await cache.restoreCache(paths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
-            const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json');
+            const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
         
             prevManifest = JSON.parse(prevManifestData);
+            core.debug(prevManifestData);
         } catch (error) {}
 
+        core.debug("Downloading manifest");
         const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
         // Wrap it in a promise to allow awaiting
         await new Promise((resolve) => {
@@ -57900,12 +57903,14 @@ async function main() {
                 res.on('end', () => resolve())
             });
         });
-        const manifestData = fs.readFileSync('./version_manifest_v2.json');
+        const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
+        core.debug(manifestData);
 
         const manifest = JSON.parse(manifestData);
 
         // Compare manifest if present
         if (prevManifest) {
+            core.debug("Comparing manifests");
             const prevVersions = prevManifest["versions"];
             const versions = manifest["versions"];
 
@@ -57924,6 +57929,8 @@ async function main() {
                 if (newVersions.length > 1) {
                     const newVersionIds = newVersions.map(v => v["id"]);
                     core.warning("Found more than one new Minecraft version: " + newVersionIds);
+                } else {
+                    core.debug("No new versions found");
                 }
 
                 core.setOutput('id', '');
@@ -57933,6 +57940,7 @@ async function main() {
         }
 
         // Generate a hash for the cache key
+        core.debug("Generating file hash");
         const fileHash = await new Promise(resolve => {
             const hash = crypto.createHash('md5');
             const stream = fs.createReadStream('./version_manifest_v2.json');
@@ -57941,6 +57949,7 @@ async function main() {
         });
 
         // Upload this version manifest as cache
+        core.debug("Uploading new manifest to cache");
         const key = restoreKey + fileHash.substring(0, 8);
         try {
             await cache.saveCache(paths, key);
