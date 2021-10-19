@@ -1,8 +1,8 @@
-import * as core from '@actions/core';
-import * as cache from '@actions/cache';
-import * as https from 'https';
-import * as fs from 'fs';
-import * as crypto from 'crypto';
+const core = require('@actions/core');
+const cache = require('@actions/cache');
+const https = require('https');
+const fs = require('fs');
+const crypto = require('crypto');
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
