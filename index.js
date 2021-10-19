@@ -13,12 +13,12 @@ async function main() {
     try {
         // Cache constants
         const paths = ['.cache'];
-        const restoreKey = 'mc-version-manifest-';
+        const restoreKey = 'mc-update-manifest-';
 
         let prevManifest;
         try {
             // Get last version manifest
-            await cache.restoreCache(paths, 'mc-version-manifest-0', // placeholder string, it should never match
+            await cache.restoreCache(paths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
             const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json');
         
