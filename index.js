@@ -76,15 +76,6 @@ async function main() {
             }
         }
 
-        // Generate a hash for the cache key
-        core.debug("Generating file hash");
-        const fileHash = await new Promise(resolve => {
-            const hash = crypto.createHash('md5');
-            const stream = fs.createReadStream('./version_manifest_v2.json');
-            stream.on('data', chunk => hash.update(chunk));
-            stream.on('end', () => resolve(hash.digest('hex')));
-        });
-
         // Upload this version manifest as cache
         core.debug("Uploading new manifest to cache");
         const key = restoreKey + Date.now();
