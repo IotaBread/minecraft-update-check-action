@@ -5,8 +5,12 @@ inputs:
     description: 'An url to the version manifest'
     required: false
     default: 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'
+  cache-base-key:
+    description: 'Base cache key'
+    required: false
+    default: 'mc-update-manifest-'
 outputs:
-  -id:
+  id:
     description: 'The new version id, or an empty string'
   type:
     description: 'The new version type, or an empty string'
