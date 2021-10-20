@@ -87,7 +87,7 @@ async function main() {
 
         // Upload this version manifest as cache
         core.debug("Uploading new manifest to cache");
-        const key = restoreKey + fileHash.substring(0, 8);
+        const key = restoreKey + Date.now();
         try {
             await cache.saveCache(cachePaths, key);
             core.debug('Uploaded cache with key ' + key);
