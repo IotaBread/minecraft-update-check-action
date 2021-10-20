@@ -57871,22 +57871,26 @@ const https = __nccwpck_require__(7211);
 const fs = __nccwpck_require__(5747);
 const crypto = __nccwpck_require__(6417);
 
+// Constants
+const cachePaths = ['.cache'];
+
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
     manifestUrl = 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
 }
 
+let restoreKey = core.getInput('cache-base-key');
+if (!restoreKey) {
+    restoreKey = 'mc-update-manifest-';
+}
+
 async function main() {
     try {
-        // Cache constants
-        const paths = ['.cache'];
-        const restoreKey = 'mc-update-manifest-';
-
         core.debug("Downloading cached manifest");
         let prevManifest;
         try {
             // Get last version manifest
-            await cache.restoreCache(paths, restoreKey + '0', // placeholder string, it should never match
+            await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
             const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
         
@@ -57952,7 +57956,7 @@ async function main() {
         core.debug("Uploading new manifest to cache");
         const key = restoreKey + fileHash.substring(0, 8);
         try {
-            await cache.saveCache(paths, key);
+            await cache.saveCache(cachePaths, key);
             core.debug('Uploaded cache with key ' + key);
         } catch (error) {
             core.error('Failed to save version manifest to cache');
