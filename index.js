@@ -4,7 +4,7 @@ const https = require('https');
 const fs = require('fs');
 
 // Constants
-const cachePaths = ['.cache/*.json'];
+const cachePaths = ['~/.cache/'];
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
@@ -24,9 +24,9 @@ async function main(onError) {
             // Get last version manifest
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
-            core.debug("./ directory contents");
-            core.debug(fs.readdirSync("./"));
-            const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
+            core.debug("~/.cache/ directory contents");
+            core.debug(fs.readdirSync("~/.cache/"));
+            const prevManifestData = fs.readFileSync('~/.cache/version_manifest_v2.json', 'utf8');
 
             prevManifest = JSON.parse(prevManifestData);
             core.debug(prevManifestData);
@@ -82,8 +82,6 @@ async function main(onError) {
 
                 // Upload this version manifest as cache
                 core.debug("Uploading new manifest to cache");
-                fs.rmSync('./.cache/version_manifest_v2.json');
-                fs.copyFileSync('./version_manifest_v2.json', './.cache/version_manifest_v2.json');
                 const key = restoreKey + Date.now();
                 cache.saveCache(cachePaths, key)
                     .then(() => {
