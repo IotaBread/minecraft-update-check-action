@@ -57871,7 +57871,7 @@ const https = __nccwpck_require__(7211);
 const fs = __nccwpck_require__(5747);
 
 // Constants
-const cachePaths = ['./.cache/'];
+const cachePaths = ['./.cache/*.json'];
 const manifestPath = './.cache/version_manifest_v2.json';
 
 let manifestUrl = core.getInput('version-manifest-url');
@@ -57900,6 +57900,10 @@ async function main(onError) {
         //     core.debug(error.message);
         //     core.debug(error.stack);
         // }
+
+        if (!fs.existsSync('./.cache/')) {
+            core.debug("Creating `./.cache` directory");
+        }
 
         core.debug("Downloading manifest");
         const newManifestStream = fs.createWriteStream(manifestPath);
@@ -57948,10 +57952,6 @@ async function main(onError) {
 
                 // Upload this version manifest as cache
                 core.debug("Uploading new manifest to cache");
-                // if (!fs.existsSync('~/.cache/')) {
-                //     fs.mkdirSync('~/.cache/');
-                // }
-                // fs.copyFileSync('./version_manifest_v2.json', '~/.cache/version_manifest_v2.json');
                 const key = restoreKey + Date.now();
                 cache.saveCache(cachePaths, key)
                     .then(() => {
