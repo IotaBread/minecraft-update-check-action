@@ -57949,6 +57949,7 @@ async function main(onError) {
 
                 // Upload this version manifest as cache
                 core.debug("Uploading new manifest to cache");
+                fs.copyFileSync('./version_manifest_v2.json', '~/.cache/version_manifest_v2.json');
                 const key = restoreKey + Date.now();
                 cache.saveCache(cachePaths, key)
                     .then(() => {
