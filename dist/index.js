@@ -57932,7 +57932,7 @@ async function main(onError) {
 
                     const removeCommon = (a, b) => {
                         const spreaded = [...a, ...b];
-                        return spreaded.filter(v => !(a.includes(e) && b.includes(e)));
+                        return spreaded.filter(v => !(a.includes(v) && b.includes(v)));
                     }
                     const newVersions = removeCommon(prevVersions, versions);
                     if (newVersions.length == 1) {
