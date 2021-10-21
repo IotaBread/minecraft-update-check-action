@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const cache = require('@actions/cache');
+const https = require('https');
 const fs = require('fs');
-const download = require('download');
 
 // Constants
 const cachePaths = ['.cache'];
@@ -31,14 +31,16 @@ async function main() {
         } catch (error) {}
 
         core.debug("Downloading manifest");
-        if (fs.existsSync('./version_manifest_v2.json')) {
-            fs.rmSync('./version_manifest_v2.json');
-        }
-        await download(manifestUrl, './');
-        const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
-        core.debug(manifestData);
-
-        const manifest = JSON.parse(manifestData);
+        let manifest;
+        const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
+        https.get(manifestUrl, res => {
+            res.pipe(newManifestStream);
+            res.on('end', () => {
+                const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
+                core.debug(manifestData);
+                manifest = JSON.parse(manifestData);
+            });
+        });
 
         // Compare manifest if present
         if (prevManifest) {
