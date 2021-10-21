@@ -1,8 +1,7 @@
 const core = require('@actions/core');
 const cache = require('@actions/cache');
-const https = require('https');
 const fs = require('fs');
-const crypto = require('crypto');
+const download = require('download');
 
 // Constants
 const cachePaths = ['.cache'];
@@ -26,20 +25,13 @@ async function main() {
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
             const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
-        
+
             prevManifest = JSON.parse(prevManifestData);
             core.debug(prevManifestData);
         } catch (error) {}
 
         core.debug("Downloading manifest");
-        const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
-        // Wrap it in a promise to allow awaiting
-        await new Promise((resolve) => {
-            https.get(manifestUrl, res => {
-                res.pipe(newManifestStream)
-                res.on('end', () => resolve())
-            });
-        });
+        await download(manifestUrl, './version_manifest_v2.json');
         const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
         core.debug(manifestData);
 
