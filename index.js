@@ -64,8 +64,10 @@ async function main(onError) {
                     const versions = manifest["versions"];
 
                     const removeCommon = (a, b) => {
-                        const spreaded = [...a, ...b];
-                        return spreaded.filter(v => !(a.includes(v) && b.includes(v)));
+                        const idsA = a.map(v => v["id"] + "@" + v["type"]);
+                        const idsB = b.map(v => v["id"] + "@" + v["type"]);
+                        const spreaded = [...idsA, ...idsB];
+                        return spreaded.filter(v => !(idsA.includes(v) && idsB.includes(v)));
                     }
                     const newVersions = removeCommon(prevVersions, versions);
                     if (newVersions.length == 1) {
