@@ -57903,6 +57903,7 @@ async function main(onError) {
 
         if (!fs.existsSync('./.cache/')) {
             core.debug("Creating `./.cache` directory");
+            fs.mkdirSync('./.cache/')
         }
 
         core.debug("Downloading manifest");
