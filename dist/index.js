@@ -57871,7 +57871,7 @@ const https = __nccwpck_require__(7211);
 const fs = __nccwpck_require__(5747);
 
 // Constants
-const cachePaths = ['.cache'];
+const cachePaths = ['.cache/*.json'];
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
@@ -57949,7 +57949,7 @@ async function main(onError) {
 
                 // Upload this version manifest as cache
                 core.debug("Uploading new manifest to cache");
-                fs.copyFileSync('./version_manifest_v2.json', cachePaths[0]);
+                fs.copyFileSync('./version_manifest_v2.json', '.cache/version_manifest_v2.json');
                 const key = restoreKey + Date.now();
                 cache.saveCache(cachePaths, key)
                     .then(() => {
