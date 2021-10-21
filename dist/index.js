@@ -57873,6 +57873,7 @@ const fs = __nccwpck_require__(5747);
 // Constants
 const cachePaths = ['./.cache/*.json'];
 const manifestPath = './.cache/version_manifest_v2.json';
+const prevManifestPath = './version_manifest_v2.json';
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
@@ -57892,10 +57893,13 @@ async function main(onError) {
             // Get last version manifest
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
-            const prevManifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
+            if (fs.existsSync(manifestPath)) {
+                fs.renameSync(manifestPath, prevManifestPath);
+                const prevManifestData = fs.readFileSync(prevManifestPath, 'utf8');
 
-            prevManifest = JSON.parse(prevManifestData);
-            core.debug(prevManifestData);
+                prevManifest = JSON.parse(prevManifestData);
+                core.debug(prevManifestData);
+            }
         } catch (error) {
             core.debug(error.message);
             core.debug(error.stack);
