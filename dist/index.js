@@ -57895,7 +57895,10 @@ async function main(onError) {
 
             prevManifest = JSON.parse(prevManifestData);
             core.debug(prevManifestData);
-        } catch (error) {}
+        } catch (error) {
+            core.debug(error.message);
+            core.debug(error.stack);
+        }
 
         core.debug("Downloading manifest");
         const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
