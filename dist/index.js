@@ -78302,7 +78302,10 @@ async function main() {
         } catch (error) {}
 
         core.debug("Downloading manifest");
-        await download(manifestUrl, './version_manifest_v2.json');
+        if (fs.existsSync('./version_manifest_v2.json')) {
+            fs.rmSync('./version_manifest_v2.json');
+        }
+        await download(manifestUrl, './');
         const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
         core.debug(manifestData);
 
