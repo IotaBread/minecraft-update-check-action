@@ -57891,6 +57891,16 @@ async function main(onError) {
             // Get last version manifest
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
+            core.debug("Cache directory contents");
+            fs.readdir(cachePaths[0], (err, files) => {
+                if (err) {
+                    return;
+                }
+
+                files.forEach(file => {
+                    core.debug(file);
+                });
+            });
             const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
 
             prevManifest = JSON.parse(prevManifestData);
