@@ -2,7 +2,7 @@ name: 'Minecraft Update Checker'
 description: 'Checks for new Minecraft Java Edition versions'
 inputs:
   version-manifest-url:
-    description: 'An url to the version manifest'
+    description: 'An url to the version manifest to check against'
     required: false
     default: 'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'
   cache-base-key:
@@ -15,7 +15,7 @@ outputs:
   type:
     description: 'The new version type, or an empty string'
   url:
-    description: 'An url for the version manifest of the new version, or an empty string'
+    description: 'A url to the version json of the new version, or an empty string'
 runs:
   using: 'node12'
   main: 'dist/index.js'
