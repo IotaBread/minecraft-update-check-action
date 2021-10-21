@@ -57871,7 +57871,8 @@ const https = __nccwpck_require__(7211);
 const fs = __nccwpck_require__(5747);
 
 // Constants
-const cachePaths = ['~/.cache/'];
+const cachePaths = ['./.cache/'];
+const manifestPath = './.cache/version_manifest_v2.json';
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
@@ -57891,9 +57892,7 @@ async function main(onError) {
             // Get last version manifest
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
-            core.debug("~/.cache/ directory contents");
-            core.debug(fs.readdirSync("~/.cache/"));
-            const prevManifestData = fs.readFileSync('~/.cache/version_manifest_v2.json', 'utf8');
+            const prevManifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
 
             prevManifest = JSON.parse(prevManifestData);
             core.debug(prevManifestData);
@@ -57903,7 +57902,7 @@ async function main(onError) {
         }
 
         core.debug("Downloading manifest");
-        const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
+        const newManifestStream = fs.createWriteStream(manifestPath);
         https.get(manifestUrl, res => {
             res.pipe(newManifestStream);
 
@@ -57911,7 +57910,7 @@ async function main(onError) {
                 onError(err);
             });
             res.on('end', () => {
-                const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
+                const manifestData = fs.readFileSync(manifestPath, 'utf8');
                 core.debug(manifestData);
 
                 const manifest = JSON.parse(manifestData);
@@ -57949,10 +57948,10 @@ async function main(onError) {
 
                 // Upload this version manifest as cache
                 core.debug("Uploading new manifest to cache");
-                if (!fs.existsSync('~/.cache/')) {
-                    fs.mkdirSync('~/.cache/');
-                }
-                fs.copyFileSync('./version_manifest_v2.json', '~/.cache/version_manifest_v2.json');
+                // if (!fs.existsSync('~/.cache/')) {
+                //     fs.mkdirSync('~/.cache/');
+                // }
+                // fs.copyFileSync('./version_manifest_v2.json', '~/.cache/version_manifest_v2.json');
                 const key = restoreKey + Date.now();
                 cache.saveCache(cachePaths, key)
                     .then(() => {
