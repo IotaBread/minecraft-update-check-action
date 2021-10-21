@@ -64,18 +64,21 @@ async function main(onError) {
                     const versions = manifest["versions"];
 
                     const removeCommon = (a, b) => {
-                        const idsA = a.map(v => v["id"] + "@" + v["type"]);
-                        const idsB = b.map(v => v["id"] + "@" + v["type"]);
+                        const idsA = a.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
+                        const idsB = b.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
                         const spreaded = [...idsA, ...idsB];
                         return spreaded.filter(v => !(idsA.includes(v) && idsB.includes(v)));
                     }
                     const newVersions = removeCommon(prevVersions, versions);
                     if (newVersions.length == 1) {
                         const newVersion = newVersions[0];
-                        core.info("Found a new Minecraft version (of type '" + newVersion["type"] + "'): " + newVersion["id"]);
-                        core.setOutput('id', newVersion["id"]);
-                        core.setOutput('type', newVersion["type"]);
-                        core.setOutput('url', newVersion["url"]);
+                        const id = newVersion.substring(0, newVersion.indexOf("@"));
+                        const type = newVersion.substring(newVersion.indexOf("@") + 1, newVersion.indexOf(":"));
+                        const url = newVersion.substring(newVersion.indexOf(":") + 1);
+                        core.info("Found a new Minecraft version (of type '" + type + "'): " + id);
+                        core.setOutput('id', id);
+                        core.setOutput('type', type);
+                        core.setOutput('url', url);
                     } else {
                         if (newVersions.length > 1) {
                             const newVersionIds = newVersions.map(v => v["id"]);
