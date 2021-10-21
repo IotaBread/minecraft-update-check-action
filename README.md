@@ -15,7 +15,7 @@ Checks for new Minecraft Java Edition versions using Github Actions cache to com
 | url  | A url to the version json of the new version, or an empty string
 
 ## Example usage
-`workflow.yml`
+[`example-workflow.yml`](.github/workflows/example-workflow.yml)
 ```yaml
 name: 'Minecraft Update check'
 

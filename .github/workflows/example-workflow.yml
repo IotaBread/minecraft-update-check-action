@@ -1,0 +1,20 @@
+name: 'Minecraft Update check'
+
+on:
+# schedule:
+#   - cron: '*/30 * * * *' # Every 30 minutes
+  workflow_dispatch: # Allow running the workflow manually
+
+jobs:
+  check-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check Minecraft updates'
+        uses: ByMartrixX/minecraft-update-check-action@v0
+        id: check
+        with:
+          cache-base-key: mc-manifest- # Cache keys will be like mc-manifest-1609470000
+
+      - name: Print new version info
+        if: ${{ steps.check.outputs.id != '' }}
+        run: "echo \"New Minecraft '${{ steps.check.outputs.type }}' released: ${{ steps.check.outputs.id }}\nUrl: ${{ steps.check.outputs.url }}\""
