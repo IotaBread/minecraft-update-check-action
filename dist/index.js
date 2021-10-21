@@ -57918,7 +57918,7 @@ async function main(onError) {
             res.on('error', err => {
                 onError(err);
             });
-            res.on('end', () => {
+            newManifestStream.on('finish', () => {
                 const manifestData = fs.readFileSync(manifestPath, 'utf8');
                 core.debug(manifestData);
 
