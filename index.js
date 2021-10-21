@@ -19,20 +19,20 @@ if (!restoreKey) {
 
 async function main(onError) {
     try {
-        // core.debug("Downloading cached manifest");
-        // let prevManifest;
-        // try {
-        //     // Get last version manifest
-        //     await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
-        //         [restoreKey]);
-        //     const prevManifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
+        core.debug("Downloading cached manifest");
+        let prevManifest;
+        try {
+            // Get last version manifest
+            await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
+                [restoreKey]);
+            const prevManifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
 
-        //     prevManifest = JSON.parse(prevManifestData);
-        //     core.debug(prevManifestData);
-        // } catch (error) {
-        //     core.debug(error.message);
-        //     core.debug(error.stack);
-        // }
+            prevManifest = JSON.parse(prevManifestData);
+            core.debug(prevManifestData);
+        } catch (error) {
+            core.debug(error.message);
+            core.debug(error.stack);
+        }
 
         if (!fs.existsSync('./.cache/')) {
             core.debug("Creating `./.cache` directory");
