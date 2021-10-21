@@ -57869,10 +57869,11 @@ const core = __nccwpck_require__(115);
 const cache = __nccwpck_require__(2091);
 const https = __nccwpck_require__(7211);
 const fs = __nccwpck_require__(5747);
-const crypto = __nccwpck_require__(6417);
 
 // Constants
-const cachePaths = ['.cache'];
+const cachePaths = ['./.cache/*.json'];
+const manifestPath = './.cache/version_manifest_v2.json';
+const prevManifestPath = './version_manifest_v2.json';
 
 let manifestUrl = core.getInput('version-manifest-url');
 if (!manifestUrl) {
@@ -57884,7 +57885,7 @@ if (!restoreKey) {
     restoreKey = 'mc-update-manifest-';
 }
 
-async function main() {
+async function main(onError) {
     try {
         core.debug("Downloading cached manifest");
         let prevManifest;
@@ -57892,73 +57893,95 @@ async function main() {
             // Get last version manifest
             await cache.restoreCache(cachePaths, restoreKey + '0', // placeholder string, it should never match
                 [restoreKey]);
-            const prevManifestData = fs.readFileSync('./.cache/version_manifest_v2.json', 'utf8');
-        
-            prevManifest = JSON.parse(prevManifestData);
-            core.debug(prevManifestData);
-        } catch (error) {}
+            if (fs.existsSync(manifestPath)) {
+                fs.renameSync(manifestPath, prevManifestPath);
+                const prevManifestData = fs.readFileSync(prevManifestPath, 'utf8');
+
+                prevManifest = JSON.parse(prevManifestData);
+                core.debug(prevManifestData);
+            }
+        } catch (error) {
+            core.debug(error.message);
+            core.debug(error.stack);
+        }
+
+        if (!fs.existsSync('./.cache/')) {
+            core.debug("Creating `./.cache` directory");
+            fs.mkdirSync('./.cache/')
+        }
 
         core.debug("Downloading manifest");
-        const newManifestStream = fs.createWriteStream('./version_manifest_v2.json');
-        // Wrap it in a promise to allow awaiting
-        await new Promise((resolve) => {
-            https.get(manifestUrl, res => {
-                res.pipe(newManifestStream)
-                res.on('end', () => resolve())
+        const newManifestStream = fs.createWriteStream(manifestPath);
+        https.get(manifestUrl, res => {
+            res.pipe(newManifestStream);
+
+            res.on('error', err => {
+                onError(err);
             });
-        });
-        const manifestData = fs.readFileSync('./version_manifest_v2.json', 'utf8');
-        core.debug(manifestData);
+            newManifestStream.on('finish', () => {
+                const manifestData = fs.readFileSync(manifestPath, 'utf8');
+                core.debug(manifestData);
 
-        const manifest = JSON.parse(manifestData);
+                const manifest = JSON.parse(manifestData);
 
-        // Compare manifest if present
-        if (prevManifest) {
-            core.debug("Comparing manifests");
-            const prevVersions = prevManifest["versions"];
-            const versions = manifest["versions"];
+                // Compare manifest if present
+                if (prevManifest) {
+                    core.debug("Comparing manifests");
+                    const prevVersions = prevManifest["versions"];
+                    const versions = manifest["versions"];
 
-            const removeCommon = (a, b) => {
-                const spreaded = [...a, ...b];
-                return spreaded.filter(v => !(a.includes(e) && b.includes(e)));
-            }
-            const newVersions = removeCommon(prevVersions, versions);
-            if (newVersions.length == 1) {
-                const newVersion = newVersions[0];
-                core.info("Found a new Minecraft version (of type '" + newVersion["type"] + "'): " + newVersion["id"]);
-                core.setOutput('id', newVersion["id"]);
-                core.setOutput('type', newVersion["type"]);
-                core.setOutput('url', newVersion["url"]);
-            } else {
-                if (newVersions.length > 1) {
-                    const newVersionIds = newVersions.map(v => v["id"]);
-                    core.warning("Found more than one new Minecraft version: " + newVersionIds);
-                } else {
-                    core.debug("No new versions found");
+                    const removeCommon = (a, b) => {
+                        const idsA = a.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
+                        const idsB = b.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
+                        const spreaded = [...idsA, ...idsB];
+                        return spreaded.filter(v => !(idsA.includes(v) && idsB.includes(v)));
+                    }
+                    const newVersions = removeCommon(prevVersions, versions);
+                    if (newVersions.length == 1) {
+                        const newVersion = newVersions[0];
+                        const id = newVersion.substring(0, newVersion.indexOf("@"));
+                        const type = newVersion.substring(newVersion.indexOf("@") + 1, newVersion.indexOf(":"));
+                        const url = newVersion.substring(newVersion.indexOf(":") + 1);
+                        core.info("Found a new Minecraft version (of type '" + type + "'): " + id);
+                        core.setOutput('id', id);
+                        core.setOutput('type', type);
+                        core.setOutput('url', url);
+                    } else {
+                        if (newVersions.length > 1) {
+                            const newVersionIds = newVersions.map(v => v["id"]);
+                            core.warning("Found more than one new Minecraft version: " + newVersionIds);
+                        } else {
+                            core.debug("No new versions found");
+                        }
+
+                        core.setOutput('id', '');
+                        core.setOutput('type', '');
+                        core.setOutput('url', '');
+                    }
                 }
 
-                core.setOutput('id', '');
-                core.setOutput('type', '');
-                core.setOutput('url', '');
-            }
-        }
-
-        // Upload this version manifest as cache
-        core.debug("Uploading new manifest to cache");
-        const key = restoreKey + Date.now();
-        try {
-            await cache.saveCache(cachePaths, key);
-            core.debug('Uploaded cache with key ' + key);
-        } catch (error) {
-            core.error('Failed to save version manifest to cache');
-            throw error;
-        }
+                // Upload this version manifest as cache
+                core.debug("Uploading new manifest to cache");
+                const key = restoreKey + Date.now();
+                cache.saveCache(cachePaths, key)
+                    .then(() => {
+                        core.debug('Uploaded cache with key ' + key);
+                    })
+                    .catch(err => {
+                        core.error('Failed to save version manifest to cache');
+                        onError(err);
+                    });
+            });
+        });
     } catch (error) {
-        core.setFailed(error.message);
+        onError(error);
     }
 }
 
-main()
+main(err => {
+    core.setFailed(err.message);
+    core.error(err.stack);
+});
 
 })();
 
