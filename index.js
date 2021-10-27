@@ -70,13 +70,19 @@ async function main(onError) {
                         const oldIds = prev.map(versionInfoMapper);
                         const currentIds = current.map(versionInfoMapper);
                         const spreaded = [...oldIds, ...currentIds];
-                        return spreaded.filter(o => !oldIds.includes(o) && currentIds.includes(o));
+                        return spreaded.filter(o => {
+                            const o1 = o.substring(o.indexOf(":"));
+                            return !oldIds.includes(o1) && currentIds.includes(o1);
+                        });
                     };
                     const findRemovedVersions = (prev, current) => {
                         const oldIds = prev.map(versionInfoMapper);
                         const currentIds = current.map(versionInfoMapper);
                         const spreaded = [...oldIds, ...currentIds];
-                        return spreaded.filter(o => oldIds.includes(o) && !currentIds.includes(o));
+                        return spreaded.filter(o => {
+                            const o1 = o.substring(o.indexOf(":"));
+                            return oldIds.includes(o1) && !currentIds.includes(o1);
+                        });
                     };
 
                     const removedVersions = findRemovedVersions(prevVersions, versions);
