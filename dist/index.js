@@ -57967,15 +57967,11 @@ async function main(onError) {
                         core.setOutput('type', type);
                         core.setOutput('url', url);
                     } else {
-                        const versionIdAndTypeGetter = v => `'${v.substring(0, v.indexOf(":"))}'`;
-
                         if (removedVersions.length > 0) {
-                            const removedVersionInfos = removedVersions.map(versionIdAndTypeGetter);
-                            core.warning("Found removed Minecraft versions:" + removedVersionInfos.join(', '))
+                            core.warning("Found removed Minecraft versions:" + removedVersions.join(',\n'))
                         }
                         if (newVersions.length > 1) {
-                            const newVersionInfos = newVersions.map(versionIdAndTypeGetter);
-                            core.warning("Found more than one new Minecraft version:\n" + newVersionInfos.join(', '));
+                            core.warning("Found more than one new Minecraft version:\n" + newVersions.join(',\n'));
                         } else {
                             core.debug("No new versions found");
                         }
