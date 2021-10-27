@@ -9,6 +9,10 @@ inputs:
     description: 'Base cache key'
     required: false
     default: 'mc-update-manifest-'
+  debug-disable-cache-storing:
+    description: '[DEBUG] Whether to disable cache storing'
+    required: false
+    default: false
 outputs:
   id:
     description: 'The new version id, or an empty string'

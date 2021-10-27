@@ -18,6 +18,8 @@ if (!restoreKey) {
     restoreKey = 'mc-update-manifest-';
 }
 
+const debugDisableCacheStoring = core.getBooleanInput('debug-disable-cache-storing');
+
 async function main(onError) {
     try {
         core.debug("Downloading cached manifest");
@@ -63,14 +65,23 @@ async function main(onError) {
                     const prevVersions = prevManifest["versions"];
                     const versions = manifest["versions"];
 
-                    const removeCommon = (a, b) => {
-                        const idsA = a.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
-                        const idsB = b.map(v => v["id"] + "@" + v["type"] + ":" + v["url"]);
-                        const spreaded = [...idsA, ...idsB];
-                        return spreaded.filter(v => !(idsA.includes(v) && idsB.includes(v)));
-                    }
-                    const newVersions = removeCommon(prevVersions, versions);
-                    if (newVersions.length == 1) {
+                    const versionInfoMapper = v => v["id"] + "@" + v["type"] + ":" + v["url"];
+                    const findNewVersions = (prev, current) => {
+                        const oldIds = prev.map(versionInfoMapper);
+                        const currentIds = current.map(versionInfoMapper);
+                        const spreaded = [...oldIds, ...currentIds];
+                        return spreaded.filter(o => !oldIds.includes(o) && currentIds.includes(o));
+                    };
+                    const findRemovedVersions = (prev, current) => {
+                        const oldIds = prev.map(versionInfoMapper);
+                        const currentIds = current.map(versionInfoMapper);
+                        const spreaded = [...oldIds, ...currentIds];
+                        return spreaded.filter(o => oldIds.includes(o) && !currentIds.includes(o));
+                    };
+
+                    const removedVersions = findRemovedVersions(prevVersions, versions);
+                    const newVersions = findNewVersions(prevVersions, versions);
+                    if (newVersions.length == 1 && removedVersions.length == 0) {
                         const newVersion = newVersions[0];
                         const id = newVersion.substring(0, newVersion.indexOf("@"));
                         const type = newVersion.substring(newVersion.indexOf("@") + 1, newVersion.indexOf(":"));
@@ -80,8 +91,14 @@ async function main(onError) {
                         core.setOutput('type', type);
                         core.setOutput('url', url);
                     } else {
+                        const versionIdAndTypeGetter = v => `'${v.substring(0, v.indexOf(":"))}'`;
+
+                        if (removedVersions.length > 0) {
+                            const removedVersionInfos = removedVersions.map(versionIdAndTypeGetter);
+                            core.warning("Found removed Minecraft versions:" + removedVersionInfos.join(', '))
+                        }
                         if (newVersions.length > 1) {
-                            const newVersionInfos = newVersions.map(v => `'${v.substring(0, v.indexOf(":"))}'`);
+                            const newVersionInfos = newVersions.map(versionIdAndTypeGetter);
                             core.warning("Found more than one new Minecraft version:\n" + newVersionInfos.join(', '));
                         } else {
                             core.debug("No new versions found");
@@ -91,6 +108,10 @@ async function main(onError) {
                         core.setOutput('type', '');
                         core.setOutput('url', '');
                     }
+                }
+
+                if (debugDisableCacheStoring) {
+                    return;
                 }
 
                 // Upload this version manifest as cache
