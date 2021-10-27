@@ -110,7 +110,8 @@ async function main(onError) {
                     }
                 }
 
-                if (debugDisableCacheStoring) {
+                if (debugDisableCacheStoring && debugDisableCacheStoring === true) {
+                    core.debug("Cache storing disabled!");
                     return;
                 }
 
