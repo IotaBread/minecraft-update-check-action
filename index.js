@@ -81,8 +81,8 @@ async function main(onError) {
                         core.setOutput('url', url);
                     } else {
                         if (newVersions.length > 1) {
-                            const newVersionIds = newVersions.map(v => v.substring(0, v.indexOf("@")));
-                            core.warning("Found more than one new Minecraft version: " + newVersionIds);
+                            const newVersionInfos = newVersions.map(v => `'${v.substring(0, v.indexOf(":"))}'`);
+                            core.warning("Found more than one new Minecraft version:\n" + newVersionInfos.join(', '));
                         } else {
                             core.debug("No new versions found");
                         }
