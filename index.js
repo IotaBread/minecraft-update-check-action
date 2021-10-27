@@ -30,7 +30,12 @@ if (!restoreKey) {
     restoreKey = 'mc-update-manifest-';
 }
 
-const debugDisableCacheStoring = core.getBooleanInput('debug-disable-cache-storing');
+let debugDisableCacheStoring;
+try {
+    debugDisableCacheStoring = core.getBooleanInput('debug-disable-cache-storing');
+} catch (error) {
+    debugDisableCacheStoring = false;
+}
 
 async function main(onError) {
     try {
