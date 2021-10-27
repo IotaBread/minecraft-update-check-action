@@ -57932,28 +57932,31 @@ async function main(onError) {
                     const prevVersions = prevManifest["versions"];
                     const versions = manifest["versions"];
 
-                    const versionInfoMapper = v => v["id"] + "@" + v["type"] + ":" + v["url"];
                     const findNewVersions = (prev, current) => {
-                        const oldIds = prev.map(versionInfoMapper);
-                        const currentIds = current.map(versionInfoMapper);
-                        const spreaded = [...oldIds, ...currentIds];
+                        const prevIdsAndTypes = prev.map(v => v.substring(v.indexOf(":")));
+                        const currentIdsAndTypes = current.map(v => v.substring(v.indexOf(":")));
+                        const spreaded = [...prev, ...current];
                         return spreaded.filter(o => {
-                            const o1 = o.substring(o.indexOf(":"));
-                            return !oldIds.includes(o1) && currentIds.includes(o1);
+                            const idAndType = o.substring(o.indexOf(":"));
+                            return !prevIdsAndTypes.includes(idAndType) && currentIdsAndTypes.includes(idAndType);
                         });
                     };
                     const findRemovedVersions = (prev, current) => {
-                        const oldIds = prev.map(versionInfoMapper);
-                        const currentIds = current.map(versionInfoMapper);
-                        const spreaded = [...oldIds, ...currentIds];
+                        const prevIdsAndTypes = prev.map(v => v.substring(v.indexOf(":")));
+                        const currentIdsAndTypes = current.map(v => v.substring(v.indexOf(":")));
+                        const spreaded = [...prev, ...current];
                         return spreaded.filter(o => {
-                            const o1 = o.substring(o.indexOf(":"));
-                            return oldIds.includes(o1) && !currentIds.includes(o1);
+                            const idAndType = o.substring(o.indexOf(":"));
+                            return prevIdsAndTypes.includes(idAndType) && !currentIdsAndTypes.includes(idAndType);
                         });
                     };
+                    const versionInfoMapper = v => v["id"] + "@" + v["type"] + ":" + v["url"];
 
-                    const removedVersions = findRemovedVersions(prevVersions, versions);
-                    const newVersions = findNewVersions(prevVersions, versions);
+                    const prevVersionsInfo = prevVersions.map(versionInfoMapper);
+                    const versionsInfo = versions.map(versionInfoMapper);
+
+                    const removedVersions = findRemovedVersions(prevVersionsInfo, versionsInfo);
+                    const newVersions = findNewVersions(prevVersionsInfo, versionsInfo);
                     if (newVersions.length == 1 && removedVersions.length == 0) {
                         const newVersion = newVersions[0];
                         const id = newVersion.substring(0, newVersion.indexOf("@"));
