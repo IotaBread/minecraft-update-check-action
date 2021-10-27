@@ -3,6 +3,18 @@ const cache = require('@actions/cache');
 const https = require('https');
 const fs = require('fs');
 
+class Version {
+    constructor(id, type, url) {
+        this.id = id;
+        this.type = type;
+        this.url = url;
+    }
+
+    toString() {
+        return this.id + "@" + this.type;
+    }
+}
+
 // Constants
 const cachePaths = ['./.cache/*.json'];
 const manifestPath = './.cache/version_manifest_v2.json';
@@ -62,49 +74,37 @@ async function main(onError) {
                 // Compare manifest if present
                 if (prevManifest) {
                     core.debug("Comparing manifests");
-                    const prevVersions = prevManifest["versions"];
-                    const versions = manifest["versions"];
+                    let prevVersions = prevManifest["versions"];
+                    let versions = manifest["versions"];
 
-                    const findNewVersions = (prev, current) => {
-                        const prevIdsAndTypes = prev.map(v => v.substring(v.indexOf(":")));
-                        const currentIdsAndTypes = current.map(v => v.substring(v.indexOf(":")));
+                    const findNewVersions = (prev, current, f) => {
+                        const prevMapped = prev.map(f);
+                        const currentMapped = current.map(f);
                         const spreaded = [...prev, ...current];
-                        return spreaded.filter(o => {
-                            const idAndType = o.substring(o.indexOf(":"));
-                            return !prevIdsAndTypes.includes(idAndType) && currentIdsAndTypes.includes(idAndType);
-                        });
-                    };
-                    const findRemovedVersions = (prev, current) => {
-                        const prevIdsAndTypes = prev.map(v => v.substring(v.indexOf(":")));
-                        const currentIdsAndTypes = current.map(v => v.substring(v.indexOf(":")));
-                        const spreaded = [...prev, ...current];
-                        return spreaded.filter(o => {
-                            const idAndType = o.substring(o.indexOf(":"));
-                            return prevIdsAndTypes.includes(idAndType) && !currentIdsAndTypes.includes(idAndType);
-                        });
-                    };
-                    const versionInfoMapper = v => v["id"] + "@" + v["type"] + ":" + v["url"];
+                        return spreaded.filter(v => !prevMapped.includes(f(v)) && currentMapped.includes(f(v)));
+                    }
 
-                    const prevVersionsInfo = prevVersions.map(versionInfoMapper);
-                    const versionsInfo = versions.map(versionInfoMapper);
+                    const versionFactory = v => new Version(v["id"], v["type"], v["url"]);
+                    prevVersions = prevVersions.map(versionFactory);
+                    versions = versions.map(versionFactory);
 
-                    const removedVersions = findRemovedVersions(prevVersionsInfo, versionsInfo);
-                    const newVersions = findNewVersions(prevVersionsInfo, versionsInfo);
+                    const versionToString = v => v.toString();
+                    const removedVersions = findNewVersions(versions, prevVersions, versionToString);
+                    const newVersions = findNewVersions(prevVersions, versions, versionToString);
+
                     if (newVersions.length == 1 && removedVersions.length == 0) {
                         const newVersion = newVersions[0];
-                        const id = newVersion.substring(0, newVersion.indexOf("@"));
-                        const type = newVersion.substring(newVersion.indexOf("@") + 1, newVersion.indexOf(":"));
-                        const url = newVersion.substring(newVersion.indexOf(":") + 1);
-                        core.info("Found a new Minecraft version (of type '" + type + "'): " + id);
-                        core.setOutput('id', id);
-                        core.setOutput('type', type);
-                        core.setOutput('url', url);
+                        core.info("New Minecraft version (of type '" + newVersion.type + "'): " + newVersion.id);
+                        core.setOutput('id', newVersion.id);
+                        core.setOutput('type', newVersion.type);
+                        core.setOutput('url', newVersion.url);
                     } else {
                         if (removedVersions.length > 0) {
-                            core.warning("Found removed Minecraft versions:" + removedVersions.join(',\n'))
+                            core.warning("Found removed Minecraft versions: " + removedVersions.map(versionToString).join(', '));
                         }
+
                         if (newVersions.length > 1) {
-                            core.warning("Found more than one new Minecraft version:\n" + newVersions.join(',\n'));
+                            core.warning("Found more than one new Minecraft version: " + newVersions.map(versionToString).join(', '));
                         } else {
                             core.debug("No new versions found");
                         }
