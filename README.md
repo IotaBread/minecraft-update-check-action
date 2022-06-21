@@ -4,7 +4,7 @@ Checks for new Minecraft Java Edition versions using Github Actions cache to com
 ## Inputs
 | name                  | required | type   | default               | description |
 | --------------------- | ---      | ------ | --------------------- | ----------- |
-| version-mainfest-url  | no       | string | `https://launchermeta.mojang.com/mc/game/version_manifest_v2.json` | An url to the version manifest to check against
+| version-manifest-url  | no       | string | `https://launchermeta.mojang.com/mc/game/version_manifest_v2.json` | An url to the version manifest to check against
 | cache-base-key        | no       | string | `mc-update-manifest-` | Base cache key. The cache key is the base followed by the action timestamp
 | debug-disable-cache-storing | no | bool   | `false`               | [DEBUG] Whether to disable cache storing
 
