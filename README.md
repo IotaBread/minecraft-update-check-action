@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check Minecraft updates'
-        uses: ByMartrixX/minecraft-update-check-action@v0
+        uses: IotaBread/minecraft-update-check-action@v0
         id: check
         with:
           cache-base-key: mc-manifest- # Cache keys will be like mc-manifest-1609470000

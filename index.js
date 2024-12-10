@@ -15,6 +15,10 @@ class Version {
     }
 }
 
+function shortenManifest(m) {
+    return {"latest": m["latest"], "versions": m["versions"].slice(0, 8)};
+}
+
 // Constants
 const cachePaths = ['./.cache/*.json'];
 const manifestPath = './.cache/version_manifest_v2.json';
@@ -50,7 +54,7 @@ async function main(onError) {
                 const prevManifestData = fs.readFileSync(prevManifestPath, 'utf8');
 
                 prevManifest = JSON.parse(prevManifestData);
-                core.debug(prevManifestData);
+                core.debug(shortenManifest(prevManifest));
             }
         } catch (error) {
             core.debug(error.message);
@@ -72,9 +76,9 @@ async function main(onError) {
             });
             newManifestStream.on('finish', () => {
                 const manifestData = fs.readFileSync(manifestPath, 'utf8');
-                core.debug(manifestData);
 
                 const manifest = JSON.parse(manifestData);
+                core.debug(shortenManifest(manifest));
 
                 // Compare manifest if present
                 if (prevManifest) {
@@ -147,3 +151,4 @@ main(err => {
     core.setFailed(err.message);
     core.error(err.stack);
 });
+

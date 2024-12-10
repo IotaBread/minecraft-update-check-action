@@ -1,6 +1,6 @@
 {
   "name": "minecraft-updates-action",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -8,10 +8,10 @@
     "prepare": "ncc build index.js --license licenses.txt"
   },
   "keywords": [],
-  "author": "ByMartrixX",
+  "author": "IotaBread",
   "license": "MIT",
   "dependencies": {
-    "@actions/cache": "^1.0.7",
-    "@actions/core": "^1.6.0"
+    "@actions/cache": "^4.0.0",
+    "@actions/core": "^1.11.1"
   }
 }
