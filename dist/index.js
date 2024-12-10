@@ -81358,7 +81358,7 @@ async function main(onError) {
                         if (newVersions.length > 1) {
                             core.warning("Found more than one new Minecraft version: " + newVersions.map(versionToString).join(', '));
                         } else {
-                            core.debug("No new versions found");
+                            core.info("No new versions found");
                         }
 
                         core.setOutput('id', '');
