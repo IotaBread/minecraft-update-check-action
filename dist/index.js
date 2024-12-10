@@ -81365,6 +81365,11 @@ async function main(onError) {
                         core.setOutput('type', '');
                         core.setOutput('url', '');
                     }
+                } else {
+                    core.info("No cached manifest");
+                    core.setOutput('id', '');
+                    core.setOutput('type', '');
+                    core.setOutput('url', '');
                 }
 
                 if (debugDisableCacheStoring && debugDisableCacheStoring === true) {
